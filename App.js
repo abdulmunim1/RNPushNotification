@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { AsyncStorage, View, Alert } from "react-native";
+import { AsyncStorage, View } from "react-native";
 import firebase from "react-native-firebase";
 import { WebView } from "react-native-webview";
 const host = "https://92a17d93fff6.ngrok.io";
@@ -8,10 +8,8 @@ export default function App() {
   const [uri, setUri] = useState(host);
   useEffect(() => {
     checkPermission();
-    createNotificationListeners();
   }, []);
 
-  //1
   async function checkPermission() {
     const enabled = await firebase.messaging().hasPermission();
     if (enabled) {
@@ -21,7 +19,6 @@ export default function App() {
     }
   }
 
-  //3
   async function getToken() {
     let fcmToken = await AsyncStorage.getItem("fcmToken");
     if (!fcmToken) {
@@ -33,7 +30,6 @@ export default function App() {
     }
   }
 
-  //2
   async function requestPermission() {
     try {
       await firebase.messaging().requestPermission();
@@ -43,42 +39,6 @@ export default function App() {
       // User has rejected permissions
       console.log("permission rejected");
     }
-  }
-
-  async function createNotificationListeners() {
-    // This listener triggered when notification has been received in foreground
-    notificationListener = firebase
-      .notifications()
-      .onNotification((notification) => {
-        const { title, body } = notification;
-        displayNotification(title, body);
-      });
-
-    // This listener triggered when app is in backgound and we click, tapped and opened notifiaction
-    notificationOpenedListener = firebase
-      .notifications()
-      .onNotificationOpened((notificationOpen) => {
-        const { title, body } = notificationOpen.notification;
-        displayNotification(title, body);
-      });
-
-    // This listener triggered when app is closed and we click,tapped and opened notification
-    const notificationOpen = await firebase
-      .notifications()
-      .getInitialNotification();
-    if (notificationOpen) {
-      const { title, body } = notificationOpen.notification;
-      displayNotification(title, body);
-    }
-  }
-
-  function displayNotification(title, body) {
-    Alert.alert(
-      title,
-      body,
-      [{ text: "Ok", onPress: () => console.log("ok pressed") }],
-      { cancelable: false }
-    );
   }
 
   async function navigationStateChangeHandler(state) {
