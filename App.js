@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { AsyncStorage, ActivityIndicator, View } from "react-native";
 import firebase from "react-native-firebase";
 import { WebView } from "react-native-webview";
-const host = "https://cbd2dbb40d95.ngrok.io";
+const host = "https://morning-badlands-40082.herokuapp.com/";
 
 export default function App() {
   const [uri, setUri] = useState(host);
