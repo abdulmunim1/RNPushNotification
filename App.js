@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from "react";
-import { AsyncStorage, View } from "react-native";
+import React, { useState, useEffect, useRef } from "react";
+import { AsyncStorage, ActivityIndicator, View } from "react-native";
 import firebase from "react-native-firebase";
 import { WebView } from "react-native-webview";
-const host = "https://dc2641d4e4e0.ngrok.io";
+const host = "https://cbd2dbb40d95.ngrok.io";
 
 export default function App() {
   const [uri, setUri] = useState(host);
+  const webViewRef = useRef(null);
+
   useEffect(() => {
     checkPermission();
+    createNotificationListeners();
   }, []);
 
   async function checkPermission() {
@@ -44,21 +47,56 @@ export default function App() {
       state.url.includes(route)
     );
     const fcmToken = await AsyncStorage.getItem("fcmToken");
-    if(!!fcmToken && !isAuthRoutes){
+    if (!!fcmToken && !isAuthRoutes) {
       setUri(`${host}/users/save_token?token=${fcmToken}`);
     }
-    if(isAuthRoutes){
-      setUri(state.url)
+    if (isAuthRoutes) {
+      setUri(state.url);
     }
   }
 
+  async function createNotificationListeners() {
+    // This listener triggered when notification has been received in foreground
+    firebase.notifications().onNotification((notification) => {
+      webViewRef.current.reload();
+    });
+
+    firebase.notifications().onNotificationOpened((notificationOpen) => {
+      webViewRef.current.reload();
+    });
+
+    // This listener triggered when app is closed and we click,tapped and opened notification
+    const notificationOpen = await firebase
+      .notifications()
+      .getInitialNotification();
+    if (notificationOpen) {
+      webViewRef.current.reload();
+    }
+  }
   return (
-      <WebView
-        source={{
-          uri: uri,
-        }}
-        onNavigationStateChange={navigationStateChangeHandler}
-        style={{ flex: 1 }}
-      />
+    <WebView
+      ref={webViewRef}
+      startInLoadingState={true}
+      renderLoading={() => <Loader />}
+      source={{
+        uri: uri,
+      }}
+      onNavigationStateChange={navigationStateChangeHandler}
+      style={{ flex: 1 }}
+    />
+  );
+}
+
+function Loader() {
+  return (
+    <View
+      style={{
+        position: "absolute",
+        top: "50%",
+        left: "45%",
+      }}
+    >
+      <ActivityIndicator color="teal" size="large" />
+    </View>
   );
 }
