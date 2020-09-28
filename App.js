@@ -1,17 +1,51 @@
 import React, { useState, useEffect, useRef } from "react";
-import { AsyncStorage, ActivityIndicator, View } from "react-native";
+import CookieManager from "react-native-cookies";
+import {
+  AsyncStorage,
+  ActivityIndicator,
+  View,
+  KeyboardAvoidingView,
+  Keyboard,
+  Platform,
+  Dimensions,
+} from "react-native";
 import firebase from "react-native-firebase";
 import { WebView } from "react-native-webview";
 const host = "https://morning-badlands-40082.herokuapp.com/";
+let keyboardWillShowSub;
+let keyboardWillHideSub;
 
 export default function App() {
   const [uri, setUri] = useState(host);
+  const [shortHeight, setShortHeight] = useState(
+    Dimensions.get("window").height
+  );
   const webViewRef = useRef(null);
 
   useEffect(() => {
     checkPermission();
     // createNotificationListeners();
+    keyboardWillShowSub = Keyboard.addListener(
+      "keyboardDidShow",
+      keyboardWillShow
+    );
+    keyboardWillHideSub = Keyboard.addListener(
+      "keyboardDidHide",
+      keyboardWillHide
+    );
+    CookieManager.clearAll();
   }, []);
+
+  function keyboardWillShow(event) {
+    console.log("hhhh", event.endCoordinates.height);
+    setShortHeight(
+      Dimensions.get("window").height - event.endCoordinates.height
+    );
+  }
+
+  function keyboardWillHide(event) {
+    setShortHeight(Dimensions.get("window").height);
+  }
 
   async function checkPermission() {
     const enabled = await firebase.messaging().hasPermission();
@@ -82,7 +116,7 @@ export default function App() {
         uri: uri,
       }}
       onNavigationStateChange={navigationStateChangeHandler}
-      style={{ flex: 1 }}
+      style={{ flex: 1, maxHeight: Number(shortHeight) }}
     />
   );
 }

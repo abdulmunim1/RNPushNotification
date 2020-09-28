@@ -17,6 +17,8 @@ target 'RNPushNotification' do
   use_flipper!
   pod 'RNFirebase', :path => '../node_modules/react-native-firebase'
 
+  pod 'react-native-cookies', :path => '../node_modules/react-native-cookies'
+
   post_install do |installer|
     flipper_post_install(installer)
   end
