@@ -10,7 +10,7 @@ export default function App() {
 
   useEffect(() => {
     checkPermission();
-    createNotificationListeners();
+    // createNotificationListeners();
   }, []);
 
   async function checkPermission() {
