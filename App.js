@@ -4,9 +4,7 @@ import {
   AsyncStorage,
   ActivityIndicator,
   View,
-  KeyboardAvoidingView,
   Keyboard,
-  Platform,
   Dimensions,
 } from "react-native";
 import firebase from "react-native-firebase";
@@ -24,7 +22,6 @@ export default function App() {
 
   useEffect(() => {
     checkPermission();
-    // createNotificationListeners();
     keyboardWillShowSub = Keyboard.addListener(
       "keyboardDidShow",
       keyboardWillShow
@@ -34,10 +31,13 @@ export default function App() {
       keyboardWillHide
     );
     CookieManager.clearAll();
+    return function cleanup() {
+      keyboardWillShowSub.remove();
+      keyboardWillHideSub.remove();
+    };
   }, []);
 
   function keyboardWillShow(event) {
-    console.log("hhhh", event.endCoordinates.height);
     setShortHeight(
       Dimensions.get("window").height - event.endCoordinates.height
     );
@@ -89,24 +89,6 @@ export default function App() {
     }
   }
 
-  async function createNotificationListeners() {
-    // This listener triggered when notification has been received in foreground
-    firebase.notifications().onNotification((notification) => {
-      webViewRef.current.reload();
-    });
-
-    firebase.notifications().onNotificationOpened((notificationOpen) => {
-      webViewRef.current.reload();
-    });
-
-    // This listener triggered when app is closed and we click,tapped and opened notification
-    const notificationOpen = await firebase
-      .notifications()
-      .getInitialNotification();
-    if (notificationOpen) {
-      webViewRef.current.reload();
-    }
-  }
   return (
     <WebView
       ref={webViewRef}
